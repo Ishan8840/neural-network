@@ -41,10 +41,8 @@ cd simple-neural-network
 2. Install dependencies:
 
 ```bash
-pip install nnfs numpy
+pip install requirements.txt
 ```
-
-> `nnfs` is used for dataset generation and consistent initialization.
 
 ---
 
