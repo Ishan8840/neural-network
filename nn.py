@@ -4,7 +4,7 @@ from nnfs.datasets import spiral_data
 
 nnfs.init()
 
-
+# Fully connected (dense) layer
 class Layer_Dense:
     def __init__(self, n_inputs, n_neurons):
         self.weights = np.random.randn(n_inputs, n_neurons) * np.sqrt(2. / n_inputs)
@@ -19,7 +19,7 @@ class Layer_Dense:
         self.dbiases = np.sum(dvalues, axis=0, keepdims=True)
         self.dinputs = np.dot(dvalues, self.weights.T)
 
-
+# ReLu Activation
 class Activation_ReLU:
     def forward(self, inputs):
         self.inputs = inputs
@@ -29,13 +29,13 @@ class Activation_ReLU:
         self.dinputs = dvalues.copy()
         self.dinputs[self.inputs <= 0] = 0
 
-
+# Softmax Activation
 class Activation_Softmax:
     def forward(self, inputs):
         exp_values = np.exp(inputs - np.max(inputs, axis=1, keepdims=True))
         self.output = exp_values / np.sum(exp_values, axis=1, keepdims=True)
 
-
+# Computes the categorical cross-entropy loss.
 class Loss_CategoricalCrossentropy:
     def forward(self, y_pred, y_true):
         y_pred_clipped = np.clip(y_pred, 1e-7, 1-1e-7)
@@ -47,11 +47,12 @@ class Loss_CategoricalCrossentropy:
 
         return -np.log(correct_confidences)
     
+    # Returns the mean loss over all samples.
     def calculate(self, output, y):
         return np.mean(self.forward(output, y))
 
 
-
+# Combined Softmax + loss calculation
 class Activation_Softmax_Loss_CSE:
     def forward(self, inputs, y_true):
         exp_values = np.exp(inputs - np.max(inputs, axis=1, keepdims=True))
@@ -70,8 +71,10 @@ class Activation_Softmax_Loss_CSE:
         self.dinputs /= samples
 
 
+# Dataset
 X, y = spiral_data(samples=100, classes=3)
 
+# Build network
 dense1 = Layer_Dense(2, 64)
 activation1 = Activation_ReLU()
 
@@ -81,11 +84,14 @@ activation2 = Activation_ReLU()
 dense3 = Layer_Dense(64, 3)
 softmax_loss = Activation_Softmax_Loss_CSE()
 
+# Training loop
 epochs = 10001
 
 for epoch in range(epochs):
+    # Learning rate decay
     learning_rate = 1.0 / (1 + 0.0001 * epoch)
 
+    # Forward pass
     dense1.forward(X)
     activation1.forward(dense1.output)
 
@@ -94,10 +100,12 @@ for epoch in range(epochs):
 
     dense3.forward(activation2.output)
 
+    # Compute loss and accuracy
     loss = softmax_loss.forward(dense3.output, y)
     predictions = np.argmax(softmax_loss.output, axis=1)
     accuracy = np.mean(predictions == y)
 
+    # Backward pass
     softmax_loss.backward(softmax_loss.output, y)
     dense3.backward(softmax_loss.dinputs)
     activation2.backward(dense3.dinputs)
@@ -105,6 +113,7 @@ for epoch in range(epochs):
     activation1.backward(dense2.dinputs)
     dense1.backward(activation1.dinputs)
 
+    # Update weights and biases
     dense1.weights -= learning_rate * dense1.dweights
     dense1.biases -= learning_rate * dense1.dbiases
     dense2.weights -= learning_rate * dense2.dweights
