@@ -34,8 +34,8 @@ This repository contains a **fully-connected neural network implemented from scr
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/your-username/simple-neural-network.git
-cd simple-neural-network
+git clone https://github.com/Ishan8840/neural-network-scratch.git
+cd simple-neural-scratch
 ```
 
 2. Install dependencies:
